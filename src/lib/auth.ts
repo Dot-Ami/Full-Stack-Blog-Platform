@@ -1,0 +1,162 @@
+import { NextAuthOptions } from "next-auth";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
+import bcrypt from "bcryptjs";
+import { prisma } from "@/lib/prisma";
+
+export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(prisma),
+  session: {
+    strategy: "jwt",
+  },
+  pages: {
+    signIn: "/login",
+    error: "/login",
+  },
+  providers: [
+    // Google OAuth Provider
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+          // Generate username from email
+          username: profile.email.split("@")[0].replace(/[^a-zA-Z0-9_]/g, "_"),
+        };
+      },
+    }),
+    // Credentials Provider (email/password)
+    CredentialsProvider({
+      name: "credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Email and password are required");
+        }
+
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+        });
+
+        if (!user || !user.password) {
+          throw new Error("Invalid email or password");
+        }
+
+        const isPasswordValid = await bcrypt.compare(
+          credentials.password,
+          user.password
+        );
+
+        if (!isPasswordValid) {
+          throw new Error("Invalid email or password");
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          name: user.name,
+          image: user.image,
+        };
+      },
+    }),
+  ],
+  callbacks: {
+    async signIn({ user, account }) {
+      // For OAuth providers, ensure user has a username
+      if (account?.provider === "google") {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: user.email! },
+        });
+
+        if (!existingUser) {
+          // Generate unique username for new OAuth users
+          let baseUsername = user.email!.split("@")[0].replace(/[^a-zA-Z0-9_]/g, "_");
+          let username = baseUsername;
+          let counter = 1;
+
+          // Ensure username is unique
+          while (await prisma.user.findUnique({ where: { username } })) {
+            username = `${baseUsername}${counter}`;
+            counter++;
+          }
+
+          // Create user with username (OAuth users don't have passwords)
+          await prisma.user.create({
+            data: {
+              email: user.email!,
+              username,
+              name: user.name,
+              image: user.image,
+              password: "", // OAuth users don't need a password
+            },
+          });
+        }
+      }
+      return true;
+    },
+    async jwt({ token, user, account }) {
+      if (user) {
+        token.id = user.id;
+        token.username = user.username;
+      }
+
+      // For OAuth login, fetch the username from the database
+      if (account?.provider === "google" && token.email) {
+        const dbUser = await prisma.user.findUnique({
+          where: { email: token.email },
+          select: { id: true, username: true },
+        });
+        if (dbUser) {
+          token.id = dbUser.id;
+          token.username = dbUser.username;
+        }
+      }
+
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id as string;
+        session.user.username = token.username as string;
+      }
+      return session;
+    },
+  },
+};
+
+// Extend next-auth types
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      email: string;
+      username: string;
+      name?: string | null;
+      image?: string | null;
+    };
+  }
+
+  interface User {
+    id: string;
+    email: string;
+    username: string;
+    name?: string | null;
+    image?: string | null;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id: string;
+    username: string;
+  }
+}
