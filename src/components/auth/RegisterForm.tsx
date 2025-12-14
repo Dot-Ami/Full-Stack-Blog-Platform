@@ -126,17 +126,17 @@ export function RegisterForm() {
       {/* Divider */}
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-slate-200" />
+          <div className="w-full border-t border-slate-200 dark:border-slate-700" />
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-4 bg-white text-slate-500">or create with email</span>
+          <span className="px-4 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400">or create with email</span>
         </div>
       </div>
 
       {/* Email/Password Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
         {errors.form && (
-          <div className="p-4 rounded-lg bg-rose-50 border border-rose-200 text-sm text-rose-600">
+          <div className="p-4 rounded-lg bg-rose-50 dark:bg-rose-950 border border-rose-200 dark:border-rose-800 text-sm text-rose-600 dark:text-rose-400">
             {errors.form}
           </div>
         )}

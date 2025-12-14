@@ -12,11 +12,11 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-xl bg-white",
+        "rounded-xl bg-white dark:bg-slate-800",
         {
-          "shadow-sm border border-slate-200/60": variant === "default",
-          "shadow-lg shadow-slate-200/50": variant === "elevated",
-          "border-2 border-slate-200": variant === "bordered",
+          "shadow-sm border border-slate-200/60 dark:border-slate-700/60": variant === "default",
+          "shadow-lg shadow-slate-200/50 dark:shadow-slate-900/50": variant === "elevated",
+          "border-2 border-slate-200 dark:border-slate-700": variant === "bordered",
         },
         className
       )}
@@ -31,7 +31,7 @@ export function CardHeader({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("px-6 py-4 border-b border-slate-100", className)}
+      className={cn("px-6 py-4 border-b border-slate-100 dark:border-slate-700", className)}
       {...props}
     />
   );
@@ -44,7 +44,7 @@ export function CardTitle({
   return (
     <h3
       className={cn(
-        "text-lg font-semibold text-slate-900 tracking-tight",
+        "text-lg font-semibold text-slate-900 dark:text-slate-100 tracking-tight",
         className
       )}
       {...props}
@@ -58,7 +58,7 @@ export function CardDescription({
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
     <p
-      className={cn("text-sm text-slate-500 mt-1", className)}
+      className={cn("text-sm text-slate-500 dark:text-slate-400 mt-1", className)}
       {...props}
     />
   );
@@ -78,7 +78,7 @@ export function CardFooter({
   return (
     <div
       className={cn(
-        "px-6 py-4 border-t border-slate-100 bg-slate-50/50 rounded-b-xl",
+        "px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 rounded-b-xl",
         className
       )}
       {...props}

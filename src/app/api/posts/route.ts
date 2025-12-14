@@ -5,9 +5,14 @@ import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { createPostSchema } from "@/lib/validations/post";
 import { generateSlug } from "@/lib/utils";
+import { checkRateLimit } from "@/lib/ratelimit";
 
 // GET /api/posts - Get all published posts (with pagination)
 export async function GET(request: NextRequest) {
+  // Apply rate limiting for API reads
+  const rateLimitResponse = await checkRateLimit(request, "api");
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
@@ -80,6 +85,10 @@ export async function GET(request: NextRequest) {
 
 // POST /api/posts - Create a new post (authenticated)
 export async function POST(request: NextRequest) {
+  // Apply stricter rate limiting for write operations
+  const rateLimitResponse = await checkRateLimit(request, "write");
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const session = await getServerSession(authOptions);
 

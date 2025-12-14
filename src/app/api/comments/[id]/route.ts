@@ -42,7 +42,15 @@ export async function DELETE(
       );
     }
 
-    await prisma.comment.delete({ where: { id } });
+    // Soft delete: mark as deleted instead of removing from database
+    await prisma.comment.update({
+      where: { id },
+      data: {
+        deleted: true,
+        deletedAt: new Date(),
+        content: "[deleted]", // Replace content for privacy
+      },
+    });
 
     return NextResponse.json({ message: "Comment deleted successfully" });
   } catch (error) {

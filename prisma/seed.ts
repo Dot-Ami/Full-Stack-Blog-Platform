@@ -51,8 +51,9 @@ async function main() {
   // Create a demo user
   // NOTE: This is a demo password for development/testing purposes only.
   // In production, users create accounts with their own passwords.
-  // nosemgrep: hardcoded-password
-  const hashedPassword = await bcrypt.hash("Demo1234", 12);
+  // Use DEMO_PASSWORD env var if available, otherwise use default for development
+  const demoPassword = process.env.DEMO_PASSWORD || "Demo1234";
+  const hashedPassword = await bcrypt.hash(demoPassword, 12);
 
   const demoUser = await prisma.user.upsert({
     where: { email: "demo@example.com" },

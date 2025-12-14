@@ -4,9 +4,14 @@ import { ZodError } from "zod";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { createCommentSchema } from "@/lib/validations/comment";
+import { checkRateLimit } from "@/lib/ratelimit";
 
 // POST /api/comments - Create a comment (authenticated)
 export async function POST(request: NextRequest) {
+  // Apply stricter rate limiting for write operations
+  const rateLimitResponse = await checkRateLimit(request, "write");
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const session = await getServerSession(authOptions);
 

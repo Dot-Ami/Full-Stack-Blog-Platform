@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/ratelimit";
+
+// Force dynamic rendering for this route (uses request.url)
+export const dynamic = "force-dynamic";
 
 // GET /api/posts/search?q=query
 export async function GET(request: NextRequest) {
+  // Apply rate limiting for search to prevent abuse
+  const rateLimitResponse = await checkRateLimit(request, "search");
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("q");

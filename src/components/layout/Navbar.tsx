@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { Dropdown, DropdownItem, DropdownDivider } from "@/components/ui/Dropdown";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Container } from "./Container";
 import { SearchBar } from "@/components/shared/SearchBar";
 
@@ -15,7 +16,7 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-slate-200/60">
+    <nav className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-b border-slate-200/60 dark:border-slate-700/60">
       <Container size="xl">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -35,11 +36,12 @@ export function Navbar() {
           <div className="hidden md:flex items-center gap-6">
             <Link
               href="/posts"
-              className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+              className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
             >
               Explore
             </Link>
             <SearchBar />
+            <ThemeToggle />
           </div>
 
           {/* Desktop Auth */}
@@ -110,29 +112,40 @@ export function Navbar() {
             )}
           </div>
 
-          {/* Mobile menu button */}
-          <button
-            className="md:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors"
+          {/* Mobile: Theme toggle + menu button */}
+          <div className="flex items-center gap-2 md:hidden">
+            <ThemeToggle />
+            <button
+              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-menu"
+            aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
           >
-            {mobileMenuOpen ? (
-              <X className="w-5 h-5" />
-            ) : (
-              <Menu className="w-5 h-5" />
-            )}
-          </button>
+              {mobileMenuOpen ? (
+                <X className="w-5 h-5" aria-hidden="true" />
+              ) : (
+                <Menu className="w-5 h-5" aria-hidden="true" />
+              )}
+            </button>
+          </div>
         </div>
       </Container>
 
       {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-200 bg-white">
+        <div
+          id="mobile-menu"
+          className="md:hidden border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900"
+          role="navigation"
+          aria-label="Mobile navigation"
+        >
           <Container>
             <div className="py-4 space-y-4">
               <SearchBar className="w-full" />
               <Link
                 href="/posts"
-                className="block py-2 text-sm font-medium text-slate-600"
+                className="block py-2 text-sm font-medium text-slate-600 dark:text-slate-400"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Explore

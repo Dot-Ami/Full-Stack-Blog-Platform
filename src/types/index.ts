@@ -74,6 +74,8 @@ export interface PostPreview {
   _count: {
     comments: number;
   };
+  /** Calculated reading time in minutes */
+  readingTime?: number;
 }
 
 // ============================================
@@ -92,6 +94,8 @@ export interface Category {
 export interface Comment {
   id: string;
   content: string;
+  deleted: boolean;
+  deletedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
   authorId: string;
@@ -106,6 +110,8 @@ export interface CommentWithAuthor extends Comment {
     username: string;
     image: string | null;
   };
+  /** Flag to trigger fade-out animation after deletion */
+  isDeleting?: boolean;
 }
 
 export interface CommentWithReplies extends CommentWithAuthor {

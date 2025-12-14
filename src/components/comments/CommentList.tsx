@@ -27,8 +27,8 @@ export function CommentList({ comments, postId, totalCount }: CommentListProps) 
     <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center gap-2">
-        <MessageCircle className="w-5 h-5 text-slate-600" />
-        <h2 className="text-xl font-bold text-slate-900">
+        <MessageCircle className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+        <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
           Comments ({totalCount})
         </h2>
       </div>
@@ -39,7 +39,7 @@ export function CommentList({ comments, postId, totalCount }: CommentListProps) 
       {/* Comments list */}
       <div className="space-y-6">
         {comments.length === 0 ? (
-          <p className="text-center py-8 text-slate-500">
+          <p className="text-center py-8 text-slate-500 dark:text-slate-400">
             No comments yet. Be the first to share your thoughts!
           </p>
         ) : (

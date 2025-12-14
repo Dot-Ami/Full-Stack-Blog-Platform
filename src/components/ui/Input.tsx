@@ -13,6 +13,9 @@ export interface InputProps
 const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ className, label, error, helperText, type, id, ...props }, ref) => {
     const inputId = id || label?.toLowerCase().replace(/\s/g, "-");
+    const errorId = error ? `${inputId}-error` : undefined;
+    const helperId = helperText ? `${inputId}-helper` : undefined;
+    const describedBy = [errorId, helperId].filter(Boolean).join(" ") || undefined;
 
     return (
       <div className="w-full">
@@ -28,6 +31,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           type={type}
           id={inputId}
           ref={ref}
+          aria-invalid={error ? "true" : undefined}
+          aria-describedby={describedBy}
           className={cn(
             "w-full px-4 py-2.5 bg-white border rounded-lg text-slate-900 placeholder:text-slate-400 transition-all duration-200",
             "focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent",
@@ -40,10 +45,14 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           {...props}
         />
         {error && (
-          <p className="mt-1.5 text-sm text-rose-600">{error}</p>
+          <p id={errorId} className="mt-1.5 text-sm text-rose-600" role="alert">
+            {error}
+          </p>
         )}
         {helperText && !error && (
-          <p className="mt-1.5 text-sm text-slate-500">{helperText}</p>
+          <p id={helperId} className="mt-1.5 text-sm text-slate-500">
+            {helperText}
+          </p>
         )}
       </div>
     );

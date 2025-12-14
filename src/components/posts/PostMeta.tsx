@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { formatDistanceToNow, format } from "date-fns";
-import { Calendar, Clock, MessageCircle } from "lucide-react";
+import { Calendar, Clock, MessageCircle, BookOpen, Eye } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
+import { formatReadingTime } from "@/lib/utils";
 import type { Category } from "@/types";
 
 interface PostMetaProps {
@@ -16,6 +17,10 @@ interface PostMetaProps {
   publishedAt: Date | null;
   categories: Category[];
   commentCount: number;
+  /** Reading time in minutes */
+  readingTime?: number;
+  /** View count */
+  views?: number;
 }
 
 export function PostMeta({
@@ -23,6 +28,8 @@ export function PostMeta({
   publishedAt,
   categories,
   commentCount,
+  readingTime,
+  views,
 }: PostMetaProps) {
   return (
     <div className="space-y-6">
@@ -51,13 +58,13 @@ export function PostMeta({
         {publishedAt && (
           <>
             <div className="flex items-center gap-1.5">
-              <Calendar className="w-4 h-4" />
+              <Calendar className="w-4 h-4" aria-hidden="true" />
               <time dateTime={publishedAt.toISOString()}>
                 {format(new Date(publishedAt), "MMM d, yyyy")}
               </time>
             </div>
             <div className="flex items-center gap-1.5">
-              <Clock className="w-4 h-4" />
+              <Clock className="w-4 h-4" aria-hidden="true" />
               <span>
                 {formatDistanceToNow(new Date(publishedAt), {
                   addSuffix: true,
@@ -66,8 +73,22 @@ export function PostMeta({
             </div>
           </>
         )}
+        {readingTime && (
+          <div className="flex items-center gap-1.5" aria-label={`${readingTime} minute read`}>
+            <BookOpen className="w-4 h-4" aria-hidden="true" />
+            <span>{formatReadingTime(readingTime)}</span>
+          </div>
+        )}
+        {views !== undefined && views > 0 && (
+          <div className="flex items-center gap-1.5" aria-label={`${views} views`}>
+            <Eye className="w-4 h-4" aria-hidden="true" />
+            <span>
+              {views.toLocaleString()} {views === 1 ? "view" : "views"}
+            </span>
+          </div>
+        )}
         <div className="flex items-center gap-1.5">
-          <MessageCircle className="w-4 h-4" />
+          <MessageCircle className="w-4 h-4" aria-hidden="true" />
           <span>
             {commentCount} {commentCount === 1 ? "comment" : "comments"}
           </span>
