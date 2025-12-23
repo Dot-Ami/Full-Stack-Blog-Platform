@@ -63,7 +63,14 @@ export function PostForm({ post, categories = [] }: PostFormProps) {
         variant: "success",
       });
 
-      router.push(`/posts/${result.data.slug}`);
+      // Redirect to the appropriate page based on publish status
+      if (shouldPublish) {
+        // Published posts go to the public page
+        router.push(`/posts/${result.data.slug}`);
+      } else {
+        // Drafts go to the edit page so user can continue working
+        router.push(`/dashboard/posts/${result.data.id}/edit`);
+      }
       router.refresh();
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Something went wrong";

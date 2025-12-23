@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import Image from "next/image";
 import { Upload, X, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useUploadThing } from "@/lib/uploadthing";
 
 interface ImageUploadProps {
   value: string;
@@ -15,31 +16,32 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const { startUpload } = useUploadThing("postImage", {
+    onClientUploadComplete: (res) => {
+      if (res && res[0]) {
+        onChange(res[0].url);
+      }
+      setIsUploading(false);
+    },
+    onUploadError: (err) => {
+      setError(err.message || "Failed to upload image");
+      setIsUploading(false);
+    },
+  });
+
   const handleUpload = useCallback(
     async (file: File) => {
       setIsUploading(true);
       setError(null);
 
       try {
-        // For now, we'll use a URL input approach
-        // In production, integrate with Uploadthing
-        const url = URL.createObjectURL(file);
-        
-        // Simulate upload delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        
-        // In production, you would upload to Uploadthing here
-        // const res = await uploadFiles("imageUploader", { files: [file] });
-        // onChange(res[0].url);
-        
-        onChange(url);
+        await startUpload([file]);
       } catch {
         setError("Failed to upload image");
-      } finally {
         setIsUploading(false);
       }
     },
-    [onChange]
+    [startUpload]
   );
 
   const handleDrop = useCallback(

@@ -8,121 +8,95 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// ============================================
-// USER MODEL
-// ============================================
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  username      String    @unique
+  id            String     @id @default(cuid())
+  email         String     @unique
+  username      String     @unique
   name          String?
-  password      String    // Hashed with bcrypt
-  bio           String?   @db.Text
-  image         String?   // Profile image URL
+  password      String
+  bio           String?
+  image         String?
   emailVerified DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  // Relations
-  posts         Post[]
-  comments      Comment[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  accounts      Account[]
   bookmarks     Bookmark[]
-  accounts      Account[]  // For OAuth (NextAuth)
-  sessions      Session[]  // For sessions (NextAuth)
+  comments      Comment[]
+  posts         Post[]
+  sessions      Session[]
 
   @@index([email])
   @@index([username])
 }
 
-// ============================================
-// POST MODEL
-// ============================================
 model Post {
-  id            String      @id @default(cuid())
+  id            String     @id @default(cuid())
   title         String
-  slug          String      @unique
-  excerpt       String?     @db.Text  // Short description
-  content       String      @db.Text  // Rich text HTML
-  featuredImage String?     // Featured image URL
-  published     Boolean     @default(false)
+  slug          String     @unique
+  excerpt       String?
+  content       String
+  featuredImage String?
+  published     Boolean    @default(false)
   publishedAt   DateTime?
-  views         Int         @default(0) // View counter
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-
-  // Relations
-  author        User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
   authorId      String
-  comments      Comment[]
+  views         Int        @default(0)
   bookmarks     Bookmark[]
-  categories    Category[]  @relation("PostCategories")
+  comments      Comment[]
+  author        User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  categories    Category[] @relation("PostCategories")
 
   @@index([slug])
   @@index([authorId])
   @@index([published, publishedAt])
 }
 
-// ============================================
-// CATEGORY MODEL
-// ============================================
 model Category {
   id          String   @id @default(cuid())
   name        String   @unique
   slug        String   @unique
   description String?
   createdAt   DateTime @default(now())
-
-  // Relations
   posts       Post[]   @relation("PostCategories")
 
   @@index([slug])
 }
 
-// ============================================
-// COMMENT MODEL
-// ============================================
 model Comment {
   id        String    @id @default(cuid())
-  content   String    @db.Text
-  deleted   Boolean   @default(false) // Soft delete flag
-  deletedAt DateTime? // When the comment was deleted
+  content   String
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-
-  // Relations
-  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId  String
-  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId    String
-  
-  // Self-referential for nested replies
-  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
   parentId  String?
+  deleted   Boolean   @default(false)
+  deletedAt DateTime?
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
   replies   Comment[] @relation("CommentReplies")
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@index([postId])
   @@index([authorId])
   @@index([parentId])
 }
 
-// ============================================
-// NEXTAUTH REQUIRED MODELS
-// ============================================
 model Account {
   id                String  @id @default(cuid())
   userId            String
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@index([userId])
@@ -146,9 +120,6 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// ============================================
-// PASSWORD RESET TOKEN
-// ============================================
 model PasswordResetToken {
   id        String   @id @default(cuid())
   email     String
@@ -160,17 +131,13 @@ model PasswordResetToken {
   @@index([token])
 }
 
-// ============================================
-// BOOKMARK MODEL
-// ============================================
 model Bookmark {
   id        String   @id @default(cuid())
   userId    String
   postId    String
   createdAt DateTime @default(now())
-
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId])
   @@index([userId])

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { Container } from "@/components/layout/Container";
@@ -13,16 +13,36 @@ import { useToast } from "@/components/ui/Toast";
 import { Camera } from "lucide-react";
 
 export default function SettingsPage() {
-  const { data: session, update } = useSession();
+  const { data: session, status, update } = useSession();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: session?.user?.name || "",
+    name: "",
     bio: "",
-    image: session?.user?.image || "",
+    image: "",
   });
 
-  if (!session?.user) {
+  // Initialize form data when session loads
+  useEffect(() => {
+    if (session?.user) {
+      setFormData({
+        name: session.user.name || "",
+        bio: "",
+        image: session.user.image || "",
+  });
+    }
+  }, [session]);
+
+  // Wait for session to load before checking auth
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  if (status === "unauthenticated" || !session?.user) {
     redirect("/login?callbackUrl=/dashboard/settings");
   }
 

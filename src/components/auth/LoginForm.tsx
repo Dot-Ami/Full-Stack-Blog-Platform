@@ -64,7 +64,15 @@ export function LoginForm() {
 
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
+    // #region agent log
+    console.log('[DEBUG] Google sign-in button clicked, callbackUrl:', callbackUrl);
+    fetch('http://127.0.0.1:7242/ingest/5c271481-2db8-40f6-918c-db51e6f1a413',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'LoginForm.tsx:66',message:'Google sign-in initiated',data:{callbackUrl,hypothesisId:'H3'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1'})}).catch((e)=>{console.log('[DEBUG] Log fetch failed:', e);});
+    // #endregion
     try {
+      // #region agent log
+      console.log('[DEBUG] Calling signIn("google") with options:', { callbackUrl });
+      fetch('http://127.0.0.1:7242/ingest/5c271481-2db8-40f6-918c-db51e6f1a413',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'LoginForm.tsx:70',message:'Calling signIn with google provider',data:{provider:'google',options:{callbackUrl},hypothesisId:'H3'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1'})}).catch((e)=>{console.log('[DEBUG] Log fetch failed:', e);});
+      // #endregion
       await signIn("google", { callbackUrl });
     } catch {
       toast({
